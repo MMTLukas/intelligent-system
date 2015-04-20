@@ -1,15 +1,20 @@
 % set distance function
 dist = 'euclidean';
 
-% apply Sammon's mapping
-mapping = sammon(data, 2);                       % using DR toolbox function sammon
+data = importdata('features_A.txt');
+
+% apply mapping
+pca = PCA(data);
 
 % compute proximities in input space
 P = squareform(pdist(data, dist));
 P = P ./ max(max(P));
 
 % compute distances in output space
-D = squareform(pdist(mapping, dist));
+D = squareform(pdist(pca, dist));
 D = D ./ max(max(D));
 
-% compute_NPR(P, D, 5);
+% compute_NPR(P, D, NN);
+for i = [1,3,5,10,25,50]
+    compute_NPR(P, D, i)
+end;
