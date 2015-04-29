@@ -62,6 +62,6 @@ for i = 1:units_length
         learning_rate = 0.1 * exp(-j/time_constant);
 
         % adapt model vectors of all units  
-        codebook_trained(i+1,:) = codebook_trained(i,:) + learning_rate * pseudo_gaussian * (DATA(random_row,:) - codebook(i));
+        codebook_trained(i,j+1) = codebook_trained(i,j) + learning_rate * pseudo_gaussian * (DATA(random_row,j) - codebook(i,j));
     end;
 end;
