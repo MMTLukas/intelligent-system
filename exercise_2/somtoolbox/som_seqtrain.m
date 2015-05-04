@@ -446,8 +446,6 @@ if tracking >  0, % initialize tracking
   qe = zeros(floor(trainlen/update_step),1);  
 end
 
-fprintf(1,'Trainlength: %3.0f',trainlen)  
-
 for t = 1:trainlen, 
 
   % Every update_step, new values for sample indeces, neighborhood
