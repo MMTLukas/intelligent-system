@@ -18,5 +18,5 @@ sData = som_data_struct(X,'name','IS1-data','labels', L);
 sMap = som_autolabel(sMap,sData);
 
 % Display
-%som_show(sMap, 'empty', '','footnote', '','bar', 'none');
-%som_show_add('label', sMap.labels,'textsize', 7,'textcolor', 'k');
+som_show(sMap, 'empty', '','footnote', '','bar', 'none');
+som_show_add('label', sMap.labels,'textsize', 7,'textcolor', 'k');
