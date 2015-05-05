@@ -28,6 +28,7 @@ end
 % TODO: maybe use sMap.codebook later for training tests
 codebook_trained = codebook;
 
+voronoi = zeros(units_length, dataset_height);
 
 for t = 1:training_length
     
@@ -42,11 +43,11 @@ for t = 1:training_length
     end
     % min distance means max similarity
     [bmu_distance, bmu_idx] = min(distances);
+    
+    voronoi(bmu_idx).push(random_row);
 
     map_radius = max(map_height, map_width)/2;
     time_constant = training_length/log(map_radius);
-
-    pseudo_gaussian = zeros(units_length, 1);
     
     for j = 1:units_length
         % calc distance to the bmu for every map unit 
@@ -61,7 +62,7 @@ for t = 1:training_length
         neighbourhood_radius = map_radius * exp(-t/time_constant);
         
         % r(t) neighboour - e.g.: pseudo gaussian
-        pseudo_gaussian(j) = exp(-(map_distance_ij^2)/(neighbourhood_radius^2));
+        pseudo_gaussian = exp(-(map_distance_ij^2)/(neighbourhood_radius^2));
 
         % learning rate alpha(t)
         % start at 1 and decrease
@@ -69,7 +70,7 @@ for t = 1:training_length
 
         % adapt model vectors of all units
         euclidian_diff = DATA(random_row,:) - codebook_trained(j,:);
-        adapt_model_vector = learning_rate * pseudo_gaussian(j) * euclidian_diff;
+        adapt_model_vector = learning_rate * pseudo_gaussian * euclidian_diff;
         codebook_trained(j,:) = codebook_trained(j,:) + adapt_model_vector;
     end;
 end;
