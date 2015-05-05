@@ -26,10 +26,10 @@ end
 % TRAINING
 
 % TODO: maybe use sMap.codebook later for training tests
-codebook_trained = sMap.codebook;
-pseudo_gaussian = zeros(j+i, 1);
+codebook_trained = codebook;
 
-for i = 1:training_length
+
+for t = 1:training_length
     
     % find best matching unit (BMU)
     % select a random row from the input matrix
@@ -43,26 +43,33 @@ for i = 1:training_length
     % min distance means max similarity
     [bmu_distance, bmu_idx] = min(distances);
 
-    % calculate neighbourhood radius(t)
     map_radius = max(map_height, map_width)/2;
     time_constant = training_length/log(map_radius);
 
+    pseudo_gaussian = zeros(units_length, 1);
+    
     for j = 1:units_length
         % calc distance to the bmu for every map unit 
-        map_distance_ij = pdist2(codebook_trained(bmu_idx, :), codebook_trained(j,:));
-        
+        % TODO: comment what we do here
+        [bmu_row, bmu_col] = get_map_indices(bmu_idx, map_width);
+        [unit_row, unit_col] = get_map_indices(j, map_width);
+        map_distance_ij = pdist2([bmu_row, bmu_col], [unit_row, unit_col]);
+  
         % calculate neighbourhood radius(t)
         % the neighbourhood radius decreases over time from map_radius to 1, which is the BMU
-        neighbourhood_radius = map_radius * exp(-j/time_constant);
-
+        %neighbourhood_radius = map_radius * exp(-t/time_constant);
+        neighbourhood_radius = map_radius * exp(-t/time_constant);
+        
         % r(t) neighboour - e.g.: pseudo gaussian
-        pseudo_gaussian(j+i) = exp(-(map_distance_ij^2)/(neighbourhood_radius^2));
+        pseudo_gaussian(j) = exp(-(map_distance_ij^2)/(neighbourhood_radius^2));
 
         % learning rate alpha(t)
         % start at 1 and decrease
-        learning_rate = 1 * exp(-j/training_length);
+        learning_rate = 1 * exp(-t/training_length);
 
         % adapt model vectors of all units
-        codebook_trained(j,:) = codebook_trained(j,:) + learning_rate * pseudo_gaussian(j+i) * (DATA(random_row,:) - codebook_trained(j,:));
+        euclidian_diff = DATA(random_row,:) - codebook_trained(j,:);
+        adapt_model_vector = learning_rate * pseudo_gaussian(j) * euclidian_diff;
+        codebook_trained(j,:) = codebook_trained(j,:) + adapt_model_vector;
     end;
 end;
