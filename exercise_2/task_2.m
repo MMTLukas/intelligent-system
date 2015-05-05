@@ -7,6 +7,7 @@ map_height = 4;
 map_width = 6;
 units_length = map_height * map_width;
 training_length = 100;%*units_length;
+threshold = 500;
 [dataset_height dataset_width] = size(DATA);
 
 % matrix with random values between 0 and 1
@@ -28,6 +29,7 @@ end
 % TODO: maybe use sMap.codebook later for training tests
 codebook_trained = codebook;
 
+% init voronoi set with 
 voronoi = zeros(units_length, dataset_height);
 
 for t = 1:training_length
@@ -43,8 +45,6 @@ for t = 1:training_length
     end
     % min distance means max similarity
     [bmu_distance, bmu_idx] = min(distances);
-    
-    voronoi(bmu_idx).push(random_row);
 
     map_radius = max(map_height, map_width)/2;
     time_constant = training_length/log(map_radius);
@@ -73,4 +73,37 @@ for t = 1:training_length
         adapt_model_vector = learning_rate * pseudo_gaussian * euclidian_diff;
         codebook_trained(j,:) = codebook_trained(j,:) + adapt_model_vector;
     end;
+    
+    % MEAN QUANTIZATION ERROR (MQE) for SOM
+    
+    % create voronoi set
+    % write each dataset idx to its bmu idx 
+    col_idx = find(voronoi(bmu_idx,:)==0, 1);
+    voronoi(bmu_idx,col_idx) = random_row;
+    
+    MMQE = 0;
+    idx = 0;
+    MQE = zeros(units_length,1);
+    for u = 1:units_length
+        for k = 1:length(voronoi(u, :))
+             idx = voronoi(u,k);
+             if idx == 0
+                 break;
+             end
+             
+             MQE(u) = MQE(u) + norm((DATA(idx,:) - codebook_trained(u,:)),2);
+        end;
+        vi_norm = norm(voronoi(u,:));
+        
+        % only add when there is at least one entry in the voronoi set
+        if vi_norm ~= 0
+            MQE(u) = MQE(u)/vi_norm;
+            MMQE = MMQE + vi_norm/units_length*MQE(u);
+        end;
+    end;
+    
+     if MMQE > threshold
+         break;
+     end
+
 end;
