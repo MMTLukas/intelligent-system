@@ -10,7 +10,7 @@ sMap = som_randinit(X,'msize',[4 6],'shape','sheet','lattice','rect');
 % Training
 % 'gaussian' = neighbourhood function, 100 = anzahl der epochen, anzahl der
 % adaptierungsprozessen, 
-sMap = som_seqtrain(sMap, X,'neigh','gaussian','trainlen', 10);
+sMap = som_batchtrain(sMap, X,'neigh','gaussian','trainlen', 100);
 
 % sData = som_data_struct(X,'name','IS1-data','labels', cellstr(num2str(C)));
 sData = som_data_struct(X,'name','IS1-data','labels', L);
